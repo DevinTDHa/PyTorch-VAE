@@ -1,0 +1,29 @@
+model_params:
+  name: "VQVAE"
+  in_channels: 3
+  embedding_dim: 256
+  num_embeddings: 1024
+  img_size: 512
+  beta: 0.25 # Default 0.25
+
+exp_params:
+  LR: 0.0001
+  weight_decay: 0.0
+  scheduler_gamma: 0.99
+  kld_weight: 0.00025
+  manual_seed: 1265
+
+trainer_params:
+  accelerator: "gpu"
+  devices: 1
+  max_epochs: 100
+  check_val_every_n_epoch: 5
+
+logging_params:
+  save_dir: "logs/"
+  name: "basf_cotton"
+
+data_params:
+  root: "/home/ducha/Workspace/Data/basf"
+  batch_size: 8
+  num_workers: 4
