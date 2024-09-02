@@ -173,6 +173,7 @@ if __name__ == "__main__":
                 dirpath=os.path.join(tb_logger.log_dir, "checkpoints"),
                 monitor="Reconstruction_Loss",
                 save_last=True,
+                save_on_train_epoch_end=True,
             ),
         ],
         log_every_n_steps=1,

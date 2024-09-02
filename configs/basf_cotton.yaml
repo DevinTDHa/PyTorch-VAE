@@ -17,7 +17,7 @@ trainer_params:
   accelerator: "gpu"
   devices: 1
   max_epochs: 100
-  check_val_every_n_epoch: 5
+  check_val_every_n_epoch: 2
 
 logging_params:
   save_dir: "logs/"
