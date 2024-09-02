@@ -171,7 +171,7 @@ if __name__ == "__main__":
             ModelCheckpoint(
                 save_top_k=2,
                 dirpath=os.path.join(tb_logger.log_dir, "checkpoints"),
-                monitor="Reconstruction_Loss",
+                monitor="val_loss",
                 save_last=True,
             ),
         ],
