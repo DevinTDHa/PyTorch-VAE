@@ -8,3 +8,15 @@ __pycache__/
 .ipynb_checkpoints/
 
 Run.ipynb
+
+# Misc Files
+*DS_Store*
+*.log
+*.json
+*.png
+*.mp4
+*.ckpt
+*tfevents*
+hparams.yaml
+*.txt
+PKG-INFO
