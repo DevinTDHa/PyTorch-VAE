@@ -6,12 +6,12 @@ from pathlib import Path
 from models import *
 from experiment import VAEXperiment
 import torch.backends.cudnn as cudnn
-from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.utilities.seed import seed_everything
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from lightning import Trainer
+from lightning.loggers import TensorBoardLogger
+from lightning.utilities.seed import seed_everything
+from lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from dataset import VAEDataset
-from pytorch_lightning.plugins import DDPPlugin
+from lightning.plugins import DDPPlugin
 
 
 parser = argparse.ArgumentParser(description="Generic runner for VAE models")

@@ -1,66 +1,27 @@
+import sys
+
+sys.path.append("/home/tha/master-thesis-xai/thesis_utils")
+
 import shutil
+from lightning import seed_everything
 import torch
-from pytorch_lightning import LightningDataModule
-from torchvision.datasets import VisionDataset
 import yaml
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from pytorch_lightning.loggers import TensorBoardLogger
+from lightning import Trainer
+from lightning.pytorch.callbacks import LearningRateMonitor, ModelCheckpoint
+from lightning.pytorch.loggers import TensorBoardLogger
 from models import *
 from experiment import VAEXperiment
+from thesis_utils.squares_dataset import SquaresDataModule
+from torchvision import transforms
 
-# from pytorch_lightning.plugins import DDPPlugin
 from pathlib import Path
 import os
 
-
-class RedValuesDataset(VisionDataset):
-    def __init__(self, N, img_dim):
-        super(RedValuesDataset, self).__init__()
-        self.N = N
-        self.img_dim = img_dim
-        self.data = torch.zeros([N, *img_dim])
-        self.data[:, 0, ...] += torch.linspace(0.0, 1.0, N).reshape((N, 1, 1))
-
-    def __len__(self):
-        return self.N
-
-    def __getitem__(self, idx):
-        random_noise = torch.randn_like(self.data[idx]) * 0.1  # Noise scale
-        return self.data[idx] + random_noise, -1
-
-
-class RedLT(LightningDataModule):
-
-    def __init__(self, N, img_dim, batch_size):
-        super().__init__()
-        self.N = N
-        self.img_dim = img_dim
-        self.batch_size = batch_size
-
-    def setup(self, stage=None):
-        self.dataset = RedValuesDataset(self.N, self.img_dim)
-
-    def train_dataloader(self):
-        return torch.utils.data.DataLoader(
-            self.dataset, batch_size=self.batch_size, shuffle=True
-        )
-
-    def test_dataloader(self):
-        return torch.utils.data.DataLoader(self.dataset, batch_size=self.N)
-
-    def val_dataloader(self):
-        return torch.utils.data.DataLoader(self.dataset, batch_size=self.N)
-
-
 if __name__ == "__main__":
-    torch.set_float32_matmul_precision("medium")
+    torch.set_float32_matmul_precision("high")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    img_dim = (3, 32, 32)
-    N = 128
-
-    config_path = "configs/red_vq_vae_defaultb.yaml"
+    config_path = "configs/square_vq_vae.yaml"
     with open(config_path, "r") as file:
         try:
             config = yaml.safe_load(file)
@@ -69,7 +30,8 @@ if __name__ == "__main__":
 
     print(config)
 
-    tag = "_defaultb_random_noise"
+    # DHA: Added tag to save different runs
+    tag = config["data_params"]["tag"] if "tag" in config["data_params"] else ""
     config_tagged = config_path.split("/")[-1].replace(".yaml", f"{tag}.yaml")
     print(config_tagged)
 
@@ -84,7 +46,7 @@ if __name__ == "__main__":
     shutil.copy(config_path, log_path + "/" + config_tagged)
 
     # For reproducibility
-    # seed_everything(config["exp_params"]["manual_seed"], True)
+    seed_everything(config["exp_params"]["manual_seed"], True)
 
     model = vae_models[config["model_params"]["name"]](**config["model_params"])
     experiment = VAEXperiment(model, config["exp_params"])
@@ -109,10 +71,17 @@ if __name__ == "__main__":
     Path(f"{tb_logger.log_dir}/Samples").mkdir(exist_ok=True, parents=True)
     Path(f"{tb_logger.log_dir}/Reconstructions").mkdir(exist_ok=True, parents=True)
     print(f"======= Training {config['model_params']['name']} =======")
-    img_dim = (3, 32, 32)
 
-    batch_size = 16
-    N = 128
-    runner.fit(
-        experiment, datamodule=RedLT(N=N, img_dim=img_dim, batch_size=batch_size)
+    square_transforms = transforms.Compose(
+        [
+            transforms.ToTensor(),
+        ]
     )
+    data_module = SquaresDataModule(
+        folder_path=config["data_params"]["root"],
+        transform=square_transforms,
+        batch_size=config["data_params"]["batch_size"],
+        seed=config["exp_params"]["manual_seed"],
+    )
+    # TODO: Checkpoints?
+    runner.fit(experiment, datamodule=data_module)

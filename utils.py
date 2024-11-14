@@ -1,4 +1,4 @@
-import pytorch_lightning as pl
+import lightning as pl
 
 
 ## Utils to handle newer PyTorch Lightning changes from version 0.6

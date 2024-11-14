@@ -16,14 +16,14 @@ exp_params:
 trainer_params:
   accelerator: "gpu"
   devices: 1
-  max_epochs: 100
+  max_epochs: 500
   check_val_every_n_epoch: 5
 
 logging_params:
   save_dir: "logs/"
-  name: "basf_cotton"
+  name: "basf_combined"
 
 data_params:
-  root: "/home/ducha/Workspace/Data/basf"
-  batch_size: 8
-  num_workers: 4
+  root: "/home/tha/datasets/basf/"
+  batch_size: 16
+  num_workers: 1

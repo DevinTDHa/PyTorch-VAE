@@ -1,7 +1,7 @@
 model_params:
   name: "VQVAE"
   in_channels: 3
-  embedding_dim: 128
+  embedding_dim: 64
   num_embeddings: 512
   img_size: 64
   beta: 0.25 # Default 0.25
@@ -9,7 +9,7 @@ model_params:
 exp_params:
   LR: 0.001
   weight_decay: 0.0
-  scheduler_gamma: 0.95
+  #scheduler_gamma: 0.0
   kld_weight: 0.00025
   manual_seed: 1265
 
@@ -21,4 +21,10 @@ trainer_params:
 
 logging_params:
   save_dir: "logs/"
-  name: "VQVAE_square"
+  name: "VQVAE_square3"
+
+data_params:
+  root: "/data/square3"
+  batch_size: 128
+  num_workers: 4
+  tag: ""

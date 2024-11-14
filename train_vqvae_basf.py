@@ -1,21 +1,21 @@
 import shutil
 from lightning import seed_everything
 import torch
-from pytorch_lightning import LightningDataModule
+from lightning import LightningDataModule
 from torchvision.datasets import VisionDataset
-from torchvision import transforms
+from torchvision import transforms as T
 from tqdm import tqdm
 import yaml
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from pytorch_lightning.loggers import TensorBoardLogger
+from lightning import Trainer
+from lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from lightning.loggers import TensorBoardLogger
 from models import *
 from experiment import VAEXperiment
 from PIL import Image
 
 from torch.utils.data import DataLoader
 
-# from pytorch_lightning.plugins import DDPPlugin
+# from lightning.plugins import DDPPlugin
 from pathlib import Path
 import os
 import pandas as pd
@@ -51,9 +51,13 @@ class BASFDataset(VisionDataset):
         self.root: str = root
 
         img_input_size = 512
-        self.transform = transforms.Compose(
-            # [transforms.Resize(img_input_size), transforms.ToTensor()]
-            [transforms.ToTensor()]
+        self.transform = T.Compose(
+            [
+                T.ToTensor(),
+                # T.RandomRotation(degrees=(0, 180)),
+                # T.RandomHorizontalFlip(p=0.5),
+                # T.RandomVerticalFlip(p=0.5),
+            ]
         )
 
         assert (
@@ -76,9 +80,9 @@ class BASFDataset(VisionDataset):
                 self.data.append((img, label))
 
     def load_image(self, index):
-        base_name, label = self.annotation_df.iloc[index]
+        base_name, label, _ = self.annotation_df.iloc[index]
         # DHA: Assume preprocessed images
-        img_path = os.path.join(self.root, "imgs_resize512", base_name)
+        img_path = os.path.join(self.root, "imgs_padresize512", base_name)
 
         with open(img_path, "rb") as f:
             img = Image.open(f)
@@ -129,11 +133,11 @@ class BASFLightningDataModule(LightningDataModule):
 
 if __name__ == "__main__":
     torch.set_float32_matmul_precision("medium")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     img_dim = (3, 512, 512)
 
-    config_path = "configs/basf_cotton.yaml"
+    # DHA: Config defined here
+    config_path = "configs/basf_combined.yaml"
     with open(config_path, "r") as file:
         try:
             config = yaml.safe_load(file)

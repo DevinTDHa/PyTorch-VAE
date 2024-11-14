@@ -5,7 +5,7 @@ from torch import optim
 from models import BaseVAE
 from models.types_ import *
 from utils import data_loader
-import pytorch_lightning as pl
+import lightning as pl
 from torchvision import transforms
 import torchvision.utils as vutils
 from torchvision.datasets import CelebA
@@ -86,6 +86,14 @@ class VAEXperiment(pl.LightningModule):
                                            f"{self.logger.name}_Epoch_{self.current_epoch}.png"),
                               normalize=True,
                               nrow=12)
+            
+            # Log images to TensorBoard
+            grid = vutils.make_grid(samples, normalize=True, nrow=12)
+            self.logger.experiment.add_image(
+                f"{self.logger.name}_Epoch_{self.current_epoch}_Samples",
+                grid,
+                self.current_epoch,
+            )
         except Warning:
             pass
 
